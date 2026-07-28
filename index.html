@@ -173,19 +173,32 @@
 
     <!-- 3. INTERFAS LATIHAN SEBUTAN (DRILL SCREEN) -->
     <div id="screen-drill" class="w-full hidden flex flex-col items-center space-y-4">
-      <div class="w-full flex justify-between items-center bg-white px-6 py-3 rounded-2xl shadow border-2 border-indigo-200">
-        <button onclick="navigateTo('menu')" class="text-rose-500 font-bold btn-bounce">
+      <div class="w-full flex justify-between items-center bg-white px-4 sm:px-6 py-3 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-rose-500 font-bold btn-bounce flex items-center gap-1">
           <i class="fas fa-times-circle text-2xl"></i>
         </button>
-        <div class="text-indigo-900 font-bold text-xl" id="drill-level-tag">Tahap 1</div>
-        <div class="bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full text-sm">
-          Ulangan: <span id="current-rep">1</span>/<span id="total-rep">10</span>
+        <div class="text-indigo-900 font-bold text-lg sm:text-xl" id="drill-level-tag">Tahap 1</div>
+        
+        <!-- Butang Navigasi Skip / Seterusnya -->
+        <div class="flex items-center gap-2">
+          <button onclick="previousWord()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded-xl font-bold text-sm btn-bounce" title="Perkataan Sebelum">
+            <i class="fas fa-step-backward"></i>
+          </button>
+          <div class="bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full text-xs sm:text-sm">
+            Ulangan: <span id="current-rep">1</span>/<span id="total-rep">10</span>
+          </div>
+          <button onclick="skipWord()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded-xl font-bold text-sm btn-bounce flex items-center gap-1" title="Langkah Perkataan Ini">
+            <span>Skip</span> <i class="fas fa-step-forward"></i>
+          </button>
         </div>
       </div>
 
       <!-- Kad Latihan Utama -->
       <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-indigo-300 w-full text-center flex flex-col items-center justify-center min-h-[300px]">
-        <span id="drill-category" class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mb-3">Kategori</span>
+        <div class="flex justify-between w-full items-center mb-2">
+          <span id="drill-category" class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full">Kategori</span>
+          <span id="drill-word-index" class="text-xs font-bold text-slate-400">1 / 10</span>
+        </div>
         
         <div id="drill-visual" class="text-8xl mb-3">⚽</div>
         <h2 id="drill-word" class="text-4xl font-extrabold text-indigo-900 mb-2">Bola</h2>
@@ -208,7 +221,7 @@
       </div>
 
       <!-- Butang Maklum Balas Penilaian (Ibu Bapa / Terapi) -->
-      <div class="bg-white p-4 rounded-3xl shadow-md border-2 border-indigo-100 w-full text-center space-y-2">
+      <div class="bg-white p-4 rounded-3xl shadow-md border-2 border-indigo-100 w-full text-center space-y-3">
         <p class="text-slate-600 font-bold text-sm">Nilaikan Sebutan Anak & Teruskan Ulangan:</p>
         <div class="grid grid-cols-3 gap-3">
           <button onclick="recordRepetition('correct')" class="bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-2xl font-bold btn-bounce shadow">
@@ -219,6 +232,16 @@
           </button>
           <button onclick="recordRepetition('retry')" class="bg-rose-500 hover:bg-rose-600 text-white p-3 rounded-2xl font-bold btn-bounce shadow">
             ↺ Cuba Lagi
+          </button>
+        </div>
+
+        <!-- Butang Skip Utama Di Bawah -->
+        <div class="pt-2 border-t flex justify-between items-center text-xs text-slate-500 font-bold">
+          <button onclick="previousWord()" class="hover:text-indigo-600 flex items-center gap-1">
+            <i class="fas fa-arrow-left"></i> Perkataan Sebelum
+          </button>
+          <button onclick="skipWord()" class="hover:text-indigo-600 flex items-center gap-1 text-indigo-600 font-extrabold bg-indigo-50 px-3 py-1 rounded-lg">
+            Seterusnya (Skip) <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
@@ -581,6 +604,7 @@
     }
 
     function loadDrillCard() {
+      resetRecordedAudio();
       const currentItem = activeDrillSet[currentDrillIndex];
       document.getElementById('drill-level-tag').innerText = `Tahap ${currentItem.level || currentLevel}`;
       document.getElementById('drill-category').innerText = currentItem.category || "Latihan";
@@ -590,9 +614,23 @@
 
       document.getElementById('current-rep').innerText = currentRepCount;
       document.getElementById('total-rep').innerText = repTarget;
+      document.getElementById('drill-word-index').innerText = `${currentDrillIndex + 1} / ${activeDrillSet.length}`;
 
       // Autoplay contoh sebutan
       setTimeout(() => playExampleAudio(), 300);
+    }
+
+    // --- LOGIK NAVIGASI PERKATAAN (SKIP & PREVIOUS) ---
+    function skipWord() {
+      currentRepCount = 1;
+      currentDrillIndex = (currentDrillIndex + 1) % activeDrillSet.length;
+      loadDrillCard();
+    }
+
+    function previousWord() {
+      currentRepCount = 1;
+      currentDrillIndex = (currentDrillIndex - 1 + activeDrillSet.length) % activeDrillSet.length;
+      loadDrillCard();
     }
 
     function playExampleAudio() {
@@ -606,6 +644,13 @@
     }
 
     // --- RAKAMAN SUARA MURID ---
+    function resetRecordedAudio() {
+      recordedAudioUrl = null;
+      const playBtn = document.getElementById('play-recorded-btn');
+      playBtn.disabled = true;
+      playBtn.className = "bg-slate-300 text-slate-500 px-5 py-3 rounded-2xl font-bold flex items-center gap-2 btn-bounce shadow cursor-not-allowed";
+    }
+
     async function toggleRecording() {
       const btnText = document.getElementById('record-text');
       const recordBtn = document.getElementById('record-btn');
