@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CASDriller - Terapi Pertuturan Kanak-Kanak</title>
+
+  <!-- Tailwind CSS & FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Canvas Confetti & Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase SDK (v9 Compatibility Mode) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+    
+    body {
+      font-family: 'Fredoka', cursive, sans-serif;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    .btn-bounce {
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .btn-bounce:active {
+      transform: scale(0.92);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-indigo-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+  <!-- HEADER / BAR ATAS -->
+  <header class="bg-indigo-600 text-white p-4 shadow-md flex justify-between items-center border-b-4 border-indigo-800 sticky top-0 z-50">
+    <button onclick="navigateTo('menu')" class="flex items-center gap-2 text-2xl font-bold btn-bounce">
+      <span class="text-3xl">🗣️</span> CASDriller
+    </button>
+    <div class="flex items-center gap-3">
+      <div class="bg-indigo-800/80 px-3 py-1 rounded-full text-amber-300 font-bold flex items-center gap-1 text-sm sm:text-base">
+        <span>⭐</span> <span id="star-count">0</span>
+      </div>
+      <button onclick="toggleAudio()" id="audio-btn" class="bg-white p-2 rounded-full text-indigo-800 shadow btn-bounce text-lg w-10 h-10 flex items-center justify-center">
+        <i class="fas fa-volume-up"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- BEKAS KANDUNGAN UTAMA -->
+  <main class="flex-grow container mx-auto px-4 py-6 max-w-4xl flex items-center justify-center">
+    
+    <!-- 1. MENU UTAMA -->
+    <div id="screen-menu" class="w-full space-y-4 text-center">
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-indigo-200">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700 mb-2">Selamat Datang! 🎈</h1>
+        <p class="text-slate-600 text-lg">Latihan sebutan berulang yang menyeronokkan untuk anak anda.</p>
+        <div id="active-profile-tag" class="mt-2 inline-block bg-indigo-100 text-indigo-800 font-bold px-3 py-1 rounded-full text-sm">
+          Profil: Murid Utama
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <button onclick="startDrill()" class="bg-emerald-500 hover:bg-emerald-600 text-white p-6 rounded-3xl shadow-lg border-b-8 border-emerald-700 flex flex-col items-center justify-center btn-bounce col-span-2">
+          <i class="fas fa-play-circle text-5xl mb-2"></i>
+          <span class="text-2xl font-bold">Mula Latihan</span>
+        </button>
+
+        <button onclick="navigateTo('level')" class="bg-sky-500 hover:bg-sky-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-sky-700 flex flex-col items-center justify-center btn-bounce">
+          <i class="fas fa-layer-group text-3xl mb-2"></i>
+          <span class="text-lg font-bold">Pilih Tahap</span>
+        </button>
+
+        <button onclick="navigateTo('add')" class="bg-purple-500 hover:bg-purple-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-purple-700 flex flex-col items-center justify-center btn-bounce">
+          <i class="fas fa-plus-circle text-3xl mb-2"></i>
+          <span class="text-lg font-bold">Tambah Perkataan</span>
+        </button>
+
+        <button onclick="navigateTo('gallery')" class="bg-pink-500 hover:bg-pink-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-pink-700 flex flex-col items-center justify-center btn-bounce">
+          <i class="fas fa-images text-3xl mb-2"></i>
+          <span class="text-lg font-bold">Galeri Gambar</span>
+        </button>
+
+        <button onclick="navigateTo('list')" class="bg-amber-500 hover:bg-amber-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-amber-700 flex flex-col items-center justify-center btn-bounce">
+          <i class="fas fa-list-check text-3xl mb-2"></i>
+          <span class="text-lg font-bold">Senarai Saya</span>
+        </button>
+
+        <button onclick="navigateTo('reports')" class="bg-teal-500 hover:bg-teal-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-teal-700 flex flex-col items-center justify-center btn-bounce">
+          <i class="fas fa-chart-line text-3xl mb-2"></i>
+          <span class="text-lg font-bold">Kemajuan</span>
+        </button>
+
+        <button onclick="navigateTo('therapist')" class="bg-rose-500 hover:bg-rose-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-rose-700 flex flex-col items-center justify-center btn-bounce">
+          <i class="fas fa-user-md text-3xl mb-2"></i>
+          <span class="text-lg font-bold">Mod Terapi</span>
+        </button>
+
+        <button onclick="navigateTo('settings')" class="bg-slate-500 hover:bg-slate-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-slate-700 flex flex-col items-center justify-center btn-bounce col-span-2 sm:col-span-1">
+          <i class="fas fa-cog text-3xl mb-2"></i>
+          <span class="text-lg font-bold">Tetapan</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. PILIH TAHAP -->
+    <div id="screen-level" class="w-full hidden space-y-4">
+      <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
+          <i class="fas fa-arrow-left"></i> Kembali
+        </button>
+        <h2 class="text-2xl font-bold text-indigo-800">Pilih Tahap Latihan</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button onclick="selectLevel(1)" class="bg-emerald-100 border-4 border-emerald-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce">
+          <div>
+            <h3 class="text-2xl font-bold text-emerald-800">Tahap 1: Vokal</h3>
+            <p class="text-slate-600">a, i, u, e, o & Diftong (ai, au, oi)</p>
+          </div>
+          <span class="text-4xl">🅰️</span>
+        </button>
+
+        <button onclick="selectLevel(2)" class="bg-blue-100 border-4 border-blue-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce">
+          <div>
+            <h3 class="text-2xl font-bold text-blue-800">Tahap 2: Suku Kata KV</h3>
+            <p class="text-slate-600">ma, ba, pa, ta, da, ka...</p>
+          </div>
+          <span class="text-4xl">🔤</span>
+        </button>
+
+        <button onclick="selectLevel(3)" class="bg-purple-100 border-4 border-purple-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce">
+          <div>
+            <h3 class="text-2xl font-bold text-purple-800">Tahap 3: 2 Suku Kata</h3>
+            <p class="text-slate-600">bola, baju, mata, kaki, buku...</p>
+          </div>
+          <span class="text-4xl">⚽</span>
+        </button>
+
+        <button onclick="selectLevel(4)" class="bg-orange-100 border-4 border-orange-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce">
+          <div>
+            <h3 class="text-2xl font-bold text-orange-800">Tahap 4: 3 Suku Kata</h3>
+            <p class="text-slate-600">kereta, kelapa, tomato, sekolah...</p>
+          </div>
+          <span class="text-4xl">🚗</span>
+        </button>
+
+        <button onclick="selectLevel(5)" class="bg-rose-100 border-4 border-rose-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce col-span-1 sm:col-span-2">
+          <div>
+            <h3 class="text-2xl font-bold text-rose-800">Tahap 5: Frasa Pendek</h3>
+            <p class="text-slate-600">Nak susu, Buka pintu, Saya mahu...</p>
+          </div>
+          <span class="text-4xl">💬</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. INTERFAS LATIHAN SEBUTAN (DRILL SCREEN) -->
+    <div id="screen-drill" class="w-full hidden flex flex-col items-center space-y-4">
+      <div class="w-full flex justify-between items-center bg-white px-6 py-3 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-rose-500 font-bold btn-bounce">
+          <i class="fas fa-times-circle text-2xl"></i>
+        </button>
+        <div class="text-indigo-900 font-bold text-xl" id="drill-level-tag">Tahap 1</div>
+        <div class="bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full text-sm">
+          Ulangan: <span id="current-rep">1</span>/<span id="total-rep">10</span>
+        </div>
+      </div>
+
+      <!-- Kad Latihan Utama -->
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-indigo-300 w-full text-center flex flex-col items-center justify-center min-h-[300px]">
+        <span id="drill-category" class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full mb-3">Kategori</span>
+        
+        <div id="drill-visual" class="text-8xl mb-3">⚽</div>
+        <h2 id="drill-word" class="text-4xl font-extrabold text-indigo-900 mb-2">Bola</h2>
+        <p id="drill-syllables" class="text-indigo-500 font-bold text-lg mb-4">bo - la</p>
+
+        <!-- Kawalan Suara & Audio Contoh -->
+        <div class="flex flex-wrap gap-3 justify-center">
+          <button onclick="playExampleAudio()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 btn-bounce shadow">
+            <i class="fas fa-volume-up text-xl"></i> Dengar Contoh
+          </button>
+
+          <button id="record-btn" onclick="toggleRecording()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 btn-bounce shadow">
+            <i class="fas fa-microphone text-xl"></i> <span id="record-text">Rakam Suara</span>
+          </button>
+
+          <button id="play-recorded-btn" onclick="playRecordedAudio()" class="bg-slate-300 text-slate-500 px-5 py-3 rounded-2xl font-bold flex items-center gap-2 btn-bounce shadow cursor-not-allowed" disabled>
+            <i class="fas fa-play text-xl"></i> Main Rakaman
+          </button>
+        </div>
+      </div>
+
+      <!-- Butang Maklum Balas Penilaian (Ibu Bapa / Terapi) -->
+      <div class="bg-white p-4 rounded-3xl shadow-md border-2 border-indigo-100 w-full text-center space-y-2">
+        <p class="text-slate-600 font-bold text-sm">Nilaikan Sebutan Anak & Teruskan Ulangan:</p>
+        <div class="grid grid-cols-3 gap-3">
+          <button onclick="recordRepetition('correct')" class="bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-2xl font-bold btn-bounce shadow">
+            ✓ Betul
+          </button>
+          <button onclick="recordRepetition('approx')" class="bg-amber-500 hover:bg-amber-600 text-white p-3 rounded-2xl font-bold btn-bounce shadow">
+            ~ Hampir
+          </button>
+          <button onclick="recordRepetition('retry')" class="bg-rose-500 hover:bg-rose-600 text-white p-3 rounded-2xl font-bold btn-bounce shadow">
+            ↺ Cuba Lagi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. TAMBAH PERKATAAN -->
+    <div id="screen-add" class="w-full hidden space-y-4">
+      <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
+          <i class="fas fa-arrow-left"></i> Kembali
+        </button>
+        <h2 class="text-2xl font-bold text-purple-800">Tambah Perkataan Baharu</h2>
+      </div>
+
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-purple-200 space-y-4">
+        <form onsubmit="saveCustomWord(event)" class="space-y-4">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Perkataan</label>
+            <input type="text" id="add-word" required placeholder="Contoh: Kucing" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Pecahan Suku Kata (Pilihan)</label>
+            <input type="text" id="add-syllables" placeholder="Contoh: ku - cing" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Emoji ATAU Gambar (URL)</label>
+            <input type="text" id="add-icon" placeholder="Masukkan Emoji 🐱 atau URL Gambar" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Kategori</label>
+            <select id="add-category" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
+              <option value="Haiwan">Haiwan</option>
+              <option value="Makanan">Makanan</option>
+              <option value="Mainan">Mainan</option>
+              <option value="Ahli Keluarga">Ahli Keluarga</option>
+              <option value="Pakaian">Pakaian</option>
+              <option value="Kenderaan">Kenderaan</option>
+              <option value="Kata Kerja">Kata Kerja</option>
+              <option value="Frasa Harian">Frasa Harian</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tahap</label>
+            <select id="add-level" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
+              <option value="1">Tahap 1 (Vokal)</option>
+              <option value="2">Tahap 2 (Suku Kata KV)</option>
+              <option value="3" selected>Tahap 3 (2 Suku Kata)</option>
+              <option value="4">Tahap 4 (3 Suku Kata)</option>
+              <option value="5">Tahap 5 (Frasa Pendek)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-2xl shadow border-b-4 border-purple-800 btn-bounce">
+            Simpan Perkataan
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 5. GALERI GAMBAR -->
+    <div id="screen-gallery" class="w-full hidden space-y-4">
+      <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
+          <i class="fas fa-arrow-left"></i> Kembali
+        </button>
+        <h2 class="text-2xl font-bold text-pink-800">Galeri Gambar & Perkataan</h2>
+      </div>
+
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-pink-200 max-h-[60vh] overflow-y-auto">
+        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <!-- Item Galeri Diisi Oleh JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. SENARAI LATIHAN SAYA -->
+    <div id="screen-list" class="w-full hidden space-y-4">
+      <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
+          <i class="fas fa-arrow-left"></i> Kembali
+        </button>
+        <h2 class="text-2xl font-bold text-amber-800">Senarai Latihan Hari Ini</h2>
+      </div>
+
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-amber-200 space-y-4">
+        <div id="custom-drill-list" class="space-y-2">
+          <!-- Senarai Latihan -->
+        </div>
+        <button onclick="startDrillFromList()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-2xl shadow border-b-4 border-amber-700 btn-bounce">
+          Mula Latihan Senarai Ini 🚀
+        </button>
+      </div>
+    </div>
+
+    <!-- 7. KEMAJUAN & LAPORAN -->
+    <div id="screen-reports" class="w-full hidden space-y-4">
+      <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
+          <i class="fas fa-arrow-left"></i> Kembali
+        </button>
+        <h2 class="text-2xl font-bold text-teal-800">Laporan Kemajuan</h2>
+      </div>
+
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-teal-200 space-y-6">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="bg-teal-50 p-3 rounded-2xl border-2 border-teal-200">
+            <div class="text-slate-500 text-xs font-bold">Jumlah Ulangan</div>
+            <div id="rep-total" class="text-2xl font-bold text-teal-800">0</div>
+          </div>
+          <div class="bg-emerald-50 p-3 rounded-2xl border-2 border-emerald-200">
+            <div class="text-slate-500 text-xs font-bold">Sebutan Betul</div>
+            <div id="rep-correct" class="text-2xl font-bold text-emerald-800">0</div>
+          </div>
+          <div class="bg-amber-50 p-3 rounded-2xl border-2 border-amber-200">
+            <div class="text-slate-500 text-xs font-bold">Hampir Betul</div>
+            <div id="rep-approx" class="text-2xl font-bold text-amber-800">0</div>
+          </div>
+          <div class="bg-indigo-50 p-3 rounded-2xl border-2 border-indigo-200">
+            <div class="text-slate-500 text-xs font-bold">Lencana</div>
+            <div id="badge-icon" class="text-2xl font-bold text-indigo-800">🌱</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-200">
+          <canvas id="repChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. MOD AHLI TERAPI PERTUTURAN -->
+    <div id="screen-therapist" class="w-full hidden space-y-4">
+      <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
+          <i class="fas fa-arrow-left"></i> Kembali
+        </button>
+        <h2 class="text-2xl font-bold text-rose-800">Mod Ahli Terapi Pertuturan</h2>
+      </div>
+
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-rose-200 space-y-4">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Pilih / Tambah Profil Murid</label>
+          <div class="flex gap-2">
+            <select id="profile-select" onchange="changeProfile()" class="w-full p-3 border-2 border-slate-300 rounded-xl outline-none font-bold">
+              <option value="Murid Utama">Murid Utama</option>
+            </select>
+            <button onclick="addProfile()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 rounded-xl font-bold btn-bounce">
+              +
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nota Perkembangan Terapi</label>
+          <textarea id="therapist-notes" placeholder="Tulis nota penilaian klinikal atau respons murid di sini..." class="w-full p-3 border-2 border-slate-300 rounded-xl h-24 outline-none"></textarea>
+          <button onclick="saveNotes()" class="mt-2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded-xl btn-bounce">
+            Simpan Nota
+          </button>
+        </div>
+
+        <div class="border-t pt-3">
+          <h3 class="font-bold text-slate-700 mb-2">Sejarah Nota Perkembangan:</h3>
+          <div id="notes-history" class="space-y-2 text-sm text-slate-600 max-h-40 overflow-y-auto">
+            <p class="italic text-slate-400">Tiada nota lagi.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. TETAPAN -->
+    <div id="screen-settings" class="w-full hidden space-y-4">
+      <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
+        <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
+          <i class="fas fa-arrow-left"></i> Kembali
+        </button>
+        <h2 class="text-2xl font-bold text-slate-700">Tetapan Aplikasi</h2>
+      </div>
+
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-slate-200 space-y-4">
+        <div class="flex justify-between items-center py-2 border-b">
+          <span class="font-bold text-slate-700">Jumlah Ulangan Sasaran</span>
+          <select id="setting-rep-target" onchange="updateSettings()" class="p-2 border rounded-xl font-bold">
+            <option value="5">5 Kali</option>
+            <option value="10" selected>10 Kali</option>
+            <option value="15">15 Kali</option>
+            <option value="20">20 Kali</option>
+          </select>
+        </div>
+
+        <div class="flex justify-between items-center py-2 border-b">
+          <span class="font-bold text-slate-700">Kelajuan Audio Contoh</span>
+          <select id="setting-speed" onchange="updateSettings()" class="p-2 border rounded-xl font-bold">
+            <option value="0.7">Perlahan (Terapi)</option>
+            <option value="0.9" selected>Normal</option>
+          </select>
+        </div>
+
+        <button onclick="resetAllData()" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-2xl border-b-4 border-rose-700 btn-bounce mt-4">
+          Reset Semua Data & Rekod
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-indigo-100 text-center py-3 text-xs text-indigo-900 border-t-2 border-indigo-200">
+    CASDriller &copy; Terapi Pertuturan Kanak-Kanak Malaysia
+  </footer>
+
+  <!-- SCRIPT LOGIK APLIKASI -->
+  <script>
+    // --- FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyANQJFtzj2yKTa1R_3YdxTYFmEveAYTXno",
+      authDomain: "casdriller.firebaseapp.com",
+      projectId: "casdriller",
+      storageBucket: "casdriller.firebasestorage.app",
+      messagingSenderId: "234939938308",
+      appId: "1:234939938308:web:e7df38c49285388bdfe751"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- DATA BASE WORD LIST ---
+    const defaultWords = [
+      // Tahap 1
+      { word: "a", syllables: "a", icon: "🅰️", level: 1, category: "Vokal" },
+      { word: "i", syllables: "i", icon: "ℹ️", level: 1, category: "Vokal" },
+      { word: "u", syllables: "u", icon: "⛎", level: 1, category: "Vokal" },
+      { word: "ai", syllables: "a - i", icon: "✨", level: 1, category: "Vokal" },
+      // Tahap 2
+      { word: "ma", syllables: "ma", icon: "👩", level: 2, category: "Suku Kata" },
+      { word: "ba", syllables: "ba", icon: "👶", level: 2, category: "Suku Kata" },
+      { word: "pa", syllables: "pa", icon: "👨", level: 2, category: "Suku Kata" },
+      { word: "ta", syllables: "ta", icon: "👏", level: 2, category: "Suku Kata" },
+      // Tahap 3
+      { word: "bola", syllables: "bo - la", icon: "⚽", level: 3, category: "Mainan" },
+      { word: "baju", syllables: "ba - ju", icon: "👕", level: 3, category: "Pakaian" },
+      { word: "mata", syllables: "ma - ta", icon: "👁️", level: 3, category: "Anggota Badan" },
+      { word: "kaki", syllables: "ka - ki", icon: "🦶", level: 3, category: "Anggota Badan" },
+      { word: "susu", syllables: "su - su", icon: "🥛", level: 3, category: "Makanan" },
+      { word: "buku", syllables: "bu - ku", icon: "📚", level: 3, category: "Sekolah" },
+      { word: "mama", syllables: "ma - ma", icon: "👩", level: 3, category: "Ahli Keluarga" },
+      // Tahap 4
+      { word: "kereta", syllables: "ke - re - ta", icon: "🚗", level: 4, category: "Kenderaan" },
+      { word: "kelapa", syllables: "ke - la - pa", icon: "🥥", level: 4, category: "Makanan" },
+      { word: "tomato", syllables: "to - ma - to", icon: "🍅", level: 4, category: "Makanan" },
+      { word: "sekolah", syllables: "se - ko - lah", icon: "🏫", level: 4, category: "Sekolah" },
+      // Tahap 5
+      { word: "Nak susu", syllables: "Nak - su - su", icon: "🥛", level: 5, category: "Frasa Harian" },
+      { word: "Nak bola", syllables: "Nak - bo - la", icon: "⚽", level: 5, category: "Frasa Harian" },
+      { word: "Buka pintu", syllables: "Bu - ka - pin - tu", icon: "🚪", level: 5, category: "Frasa Harian" },
+      { word: "Saya mahu", syllables: "Sa - ya - ma - hu", icon: "🙋", level: 5, category: "Frasa Harian" }
+    ];
+
+    // --- STATE UTAMA ---
+    let currentProfile = "Murid Utama";
+    let profiles = ["Murid Utama"];
+    let currentLevel = 1;
+    let stars = 0;
+    let repTarget = 10;
+    let audioSpeed = 0.9;
+    let audioEnabled = true;
+
+    let totalReps = 0;
+    let correctReps = 0;
+    let approxReps = 0;
+
+    let activeDrillSet = [];
+    let currentDrillIndex = 0;
+    let currentRepCount = 0;
+
+    let customWords = [];
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordedAudioUrl = null;
+    let repChartInstance = null;
+
+    // --- APABILA APLIKASI DIMUATKAN ---
+    window.onload = () => {
+      loadState();
+      fetchCustomWordsFirebase();
+      renderGallery();
+      renderCustomList();
+    };
+
+    function navigateTo(screen) {
+      const screens = ['menu', 'level', 'drill', 'add', 'gallery', 'list', 'reports', 'therapist', 'settings'];
+      screens.forEach(s => document.getElementById(`screen-${s}`).classList.add('hidden'));
+      document.getElementById(`screen-${screen}`).classList.remove('hidden');
+
+      if (screen === 'reports') renderReports();
+      if (screen === 'gallery') renderGallery();
+      if (screen === 'list') renderCustomList();
+    }
+
+    // --- PENGURUSAN STATE LOCAL & FIREBASE ---
+    function loadState() {
+      stars = parseInt(localStorage.getItem('cas_stars') || '0');
+      totalReps = parseInt(localStorage.getItem('cas_total_reps') || '0');
+      correctReps = parseInt(localStorage.getItem('cas_correct_reps') || '0');
+      approxReps = parseInt(localStorage.getItem('cas_approx_reps') || '0');
+      document.getElementById('star-count').innerText = stars;
+    }
+
+    function saveState() {
+      localStorage.setItem('cas_stars', stars);
+      localStorage.setItem('cas_total_reps', totalReps);
+      localStorage.setItem('cas_correct_reps', correctReps);
+      localStorage.setItem('cas_approx_reps', approxReps);
+      document.getElementById('star-count').innerText = stars;
+
+      db.ref(`progress/${currentProfile}`).set({
+        stars, totalReps, correctReps, approxReps, lastUpdated: new Date().toISOString()
+      });
+    }
+
+    function fetchCustomWordsFirebase() {
+      db.ref('custom_words').on('value', (snapshot) => {
+        const data = snapshot.val();
+        customWords = [];
+        if (data) {
+          Object.keys(data).forEach(k => customWords.push(data[k]));
+        }
+      });
+    }
+
+    // --- LOGIK LATIHAN (DRILL) ---
+    function selectLevel(lvl) {
+      currentLevel = lvl;
+      startDrill();
+    }
+
+    function startDrill() {
+      const allAvailable = [...defaultWords, ...customWords];
+      activeDrillSet = allAvailable.filter(w => w.level === currentLevel);
+
+      if (activeDrillSet.length === 0) {
+        activeDrillSet = defaultWords.filter(w => w.level === 1);
+      }
+
+      currentDrillIndex = 0;
+      currentRepCount = 1;
+      navigateTo('drill');
+      loadDrillCard();
+    }
+
+    function startDrillFromList() {
+      const allAvailable = [...defaultWords, ...customWords];
+      activeDrillSet = allAvailable;
+      currentDrillIndex = 0;
+      currentRepCount = 1;
+      navigateTo('drill');
+      loadDrillCard();
+    }
+
+    function loadDrillCard() {
+      const currentItem = activeDrillSet[currentDrillIndex];
+      document.getElementById('drill-level-tag').innerText = `Tahap ${currentItem.level || currentLevel}`;
+      document.getElementById('drill-category').innerText = currentItem.category || "Latihan";
+      document.getElementById('drill-visual').innerText = currentItem.icon && currentItem.icon.length < 5 ? currentItem.icon : "🖼️";
+      document.getElementById('drill-word').innerText = currentItem.word;
+      document.getElementById('drill-syllables').innerText = currentItem.syllables || currentItem.word;
+
+      document.getElementById('current-rep').innerText = currentRepCount;
+      document.getElementById('total-rep').innerText = repTarget;
+
+      // Autoplay contoh sebutan
+      setTimeout(() => playExampleAudio(), 300);
+    }
+
+    function playExampleAudio() {
+      if (!audioEnabled || !('speechSynthesis' in window)) return;
+      const currentItem = activeDrillSet[currentDrillIndex];
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(currentItem.word);
+      utterance.lang = 'ms-MY';
+      utterance.rate = audioSpeed;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // --- RAKAMAN SUARA MURID ---
+    async function toggleRecording() {
+      const btnText = document.getElementById('record-text');
+      const recordBtn = document.getElementById('record-btn');
+
+      if (!mediaRecorder || mediaRecorder.state === "inactive") {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            recordedAudioUrl = URL.createObjectURL(audioBlob);
+            const playBtn = document.getElementById('play-recorded-btn');
+            playBtn.disabled = false;
+            playBtn.classList.remove('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+            playBtn.classList.add('bg-sky-500', 'text-white');
+          };
+
+          mediaRecorder.start();
+          btnText.innerText = "Merakam...";
+          recordBtn.classList.add('animate-pulse', 'bg-red-600');
+        } catch (err) {
+          alert('Sila berikan kebenaran mikrofon untuk merakam suara.');
+        }
+      } else {
+        mediaRecorder.stop();
+        btnText.innerText = "Rakam Suara";
+        recordBtn.classList.remove('animate-pulse', 'bg-red-600');
+      }
+    }
+
+    function playRecordedAudio() {
+      if (recordedAudioUrl) {
+        const audio = new Audio(recordedAudioUrl);
+        audio.play();
+      }
+    }
+
+    // --- REKOD ULANGAN & PENILAIAN ---
+    function recordRepetition(type) {
+      totalReps++;
+      if (type === 'correct') correctReps++;
+      if (type === 'approx') approxReps++;
+
+      // Pujian audio
+      const praises = ["Bagus!", "Hebat!", "Pandai!", "Teruskan!"];
+      const randomPraise = praises[Math.floor(Math.random() * praises.length)];
+      if (type === 'correct') {
+        speakPraise(randomPraise);
+        confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
+      }
+
+      if (currentRepCount < repTarget) {
+        currentRepCount++;
+        document.getElementById('current-rep').innerText = currentRepCount;
+      } else {
+        // Selesai satu set sasaran
+        stars++;
+        saveState();
+        currentRepCount = 1;
+        currentDrillIndex = (currentDrillIndex + 1) % activeDrillSet.length;
+        alert("Tahniah! Latihan perkataan ini selesai. Sedia untuk perkataan seterusnya!");
+        loadDrillCard();
+      }
+      saveState();
+    }
+
+    function speakPraise(text) {
+      if (!audioEnabled || !('speechSynthesis' in window)) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ms-MY';
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // --- TAMBAH PERKATAAN BAHARU ---
+    function saveCustomWord(e) {
+      e.preventDefault();
+      const word = document.getElementById('add-word').value.trim();
+      const syllables = document.getElementById('add-syllables').value.trim() || word;
+      const icon = document.getElementById('add-icon').value.trim() || "⭐";
+      const category = document.getElementById('add-category').value;
+      const level = parseInt(document.getElementById('add-level').value);
+
+      const newObj = { word, syllables, icon, category, level };
+      db.ref('custom_words').push(newObj).then(() => {
+        alert('Perkataan berjaya ditambah!');
+        navigateTo('menu');
+      });
+    }
+
+    // --- PAPARAN GALERI & SENARAI SAYA ---
+    function renderGallery() {
+      const container = document.getElementById('gallery-grid');
+      container.innerHTML = '';
+
+      const allWords = [...defaultWords, ...customWords];
+      allWords.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-pink-50 border-2 border-pink-200 rounded-2xl p-4 text-center shadow-sm";
+        card.innerHTML = `
+          <div class="text-4xl mb-1">${item.icon || '🖼️'}</div>
+          <div class="font-bold text-pink-900">${item.word}</div>
+          <div class="text-xs text-pink-600 font-bold">${item.syllables || item.word}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderCustomList() {
+      const container = document.getElementById('custom-drill-list');
+      container.innerHTML = '';
+
+      const allWords = [...defaultWords, ...customWords];
+      allWords.slice(0, 8).forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = "bg-amber-50 border-2 border-amber-200 p-3 rounded-2xl flex items-center justify-between";
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="font-bold text-amber-800">${idx + 1}.</span>
+            <span class="text-2xl">${item.icon || '⭐'}</span>
+            <span class="font-bold text-slate-800">${item.word}</span>
+          </div>
+          <span class="text-xs bg-amber-200 text-amber-900 px-2 py-1 rounded-full font-bold">${item.category}</span>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // --- LAPORAN KEMAJUAN ---
+    function renderReports() {
+      document.getElementById('rep-total').innerText = totalReps;
+      document.getElementById('rep-correct').innerText = correctReps;
+      document.getElementById('rep-approx').innerText = approxReps;
+
+      const badgeIcon = document.getElementById('badge-icon');
+      if (stars >= 100) badgeIcon.innerText = "🏆";
+      else if (stars >= 60) badgeIcon.innerText = "🥇";
+      else if (stars >= 30) badgeIcon.innerText = "🥈";
+      else if (stars >= 10) badgeIcon.innerText = "🥉";
+      else badgeIcon.innerText = "🌱";
+
+      const ctx = document.getElementById('repChart').getContext('2d');
+      if (repChartInstance) repChartInstance.destroy();
+
+      repChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Betul', 'Hampir Betul', 'Perlu Ulang'],
+          datasets: [{
+            label: 'Bilangan Sebutan',
+            data: [correctReps, approxReps, totalReps - (correctReps + approxReps)],
+            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    // --- MOD TERAPI & PROFIL MURID ---
+    function addProfile() {
+      const name = prompt("Masukkan nama murid / anak:");
+      if (name) {
+        profiles.push(name);
+        const select = document.getElementById('profile-select');
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.innerText = name;
+        select.appendChild(opt);
+        select.value = name;
+        changeProfile();
+      }
+    }
+
+    function changeProfile() {
+      currentProfile = document.getElementById('profile-select').value;
+      document.getElementById('active-profile-tag').innerText = `Profil: ${currentProfile}`;
+      loadState();
+    }
+
+    function saveNotes() {
+      const noteText = document.getElementById('therapist-notes').value.trim();
+      if (!noteText) return;
+
+      db.ref(`notes/${currentProfile}`).push({
+        text: noteText,
+        date: new Date().toLocaleDateString('ms-MY')
+      }).then(() => {
+        document.getElementById('therapist-notes').value = '';
+        alert('Nota terapi berjaya disimpan.');
+      });
+    }
+
+    // --- TETAPAN ---
+    function updateSettings() {
+      repTarget = parseInt(document.getElementById('setting-rep-target').value);
+      audioSpeed = parseFloat(document.getElementById('setting-speed').value);
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      const btn = document.getElementById('audio-btn');
+      btn.innerHTML = audioEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute text-red-500"></i>';
+    }
+
+    function resetAllData() {
+      if (confirm('Padam semua rekod latihan dan bintang?')) {
+        localStorage.clear();
+        stars = 0;
+        totalReps = 0;
+        correctReps = 0;
+        approxReps = 0;
+        saveState();
+        alert('Semua data telah dikosongkan.');
+        navigateTo('menu');
+      }
+    }
+  </script>
+</body>
+</html>
