@@ -82,14 +82,14 @@
           <span class="text-2xl font-bold">Mula Latihan</span>
         </button>
 
-        <button onclick="navigateTo('level')" class="bg-sky-500 hover:bg-sky-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-sky-700 flex flex-col items-center justify-center btn-bounce">
-          <i class="fas fa-layer-group text-3xl mb-2"></i>
-          <span class="text-lg font-bold">Pilih Tahap</span>
+        <button onclick="navigateTo('target-select')" class="bg-sky-500 hover:bg-sky-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-sky-700 flex flex-col items-center justify-center btn-bounce">
+          <i class="fas fa-bullseye text-3xl mb-2"></i>
+          <span class="text-lg font-bold">Pilih Sasaran</span>
         </button>
 
         <button onclick="navigateTo('add')" class="bg-purple-500 hover:bg-purple-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-purple-700 flex flex-col items-center justify-center btn-bounce">
           <i class="fas fa-plus-circle text-3xl mb-2"></i>
-          <span class="text-lg font-bold">Tambah Perkataan</span>
+          <span class="text-lg font-bold">Tambah Kata</span>
         </button>
 
         <button onclick="navigateTo('gallery')" class="bg-pink-500 hover:bg-pink-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-pink-700 flex flex-col items-center justify-center btn-bounce">
@@ -119,54 +119,29 @@
       </div>
     </div>
 
-    <!-- 2. PILIH TAHAP -->
-    <div id="screen-level" class="w-full hidden space-y-4">
+    <!-- 2. PILIH SASARAN TERAPI (TARGET SELECTION) -->
+    <div id="screen-target-select" class="w-full hidden space-y-4">
       <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
         <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
           <i class="fas fa-arrow-left"></i> Kembali
         </button>
-        <h2 class="text-2xl font-bold text-indigo-800">Pilih Tahap Latihan</h2>
+        <h2 class="text-2xl font-bold text-indigo-800">Pilih Sasaran Terapi Hari Ini</h2>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <button onclick="selectLevel(1)" class="bg-emerald-100 border-4 border-emerald-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce">
-          <div>
-            <h3 class="text-2xl font-bold text-emerald-800">Tahap 1: Vokal</h3>
-            <p class="text-slate-600">a, i, u, e, o & Diftong (ai, au, oi)</p>
-          </div>
-          <span class="text-4xl">🅰️</span>
-        </button>
+      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-indigo-200 space-y-4">
+        <p class="text-slate-600 font-bold">Pilih konsonan / kumpulan suku kata CV untuk dilatih:</p>
+        
+        <div id="target-consonant-grid" class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          <!-- Butang konsonan dihasilkan oleh JS -->
+        </div>
 
-        <button onclick="selectLevel(2)" class="bg-blue-100 border-4 border-blue-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce">
-          <div>
-            <h3 class="text-2xl font-bold text-blue-800">Tahap 2: Suku Kata KV</h3>
-            <p class="text-slate-600">ma, ba, pa, ta, da, ka...</p>
-          </div>
-          <span class="text-4xl">🔤</span>
-        </button>
+        <div class="pt-4 border-t flex justify-between items-center">
+          <button onclick="selectAllTargets(true)" class="text-indigo-600 font-bold text-sm hover:underline">Pilih Semua</button>
+          <button onclick="selectAllTargets(false)" class="text-rose-500 font-bold text-sm hover:underline">Nyahpilih Semua</button>
+        </div>
 
-        <button onclick="selectLevel(3)" class="bg-purple-100 border-4 border-purple-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce">
-          <div>
-            <h3 class="text-2xl font-bold text-purple-800">Tahap 3: 2 Suku Kata</h3>
-            <p class="text-slate-600">bola, baju, mata, kaki, buku...</p>
-          </div>
-          <span class="text-4xl">⚽</span>
-        </button>
-
-        <button onclick="selectLevel(4)" class="bg-orange-100 border-4 border-orange-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce">
-          <div>
-            <h3 class="text-2xl font-bold text-orange-800">Tahap 4: 3 Suku Kata</h3>
-            <p class="text-slate-600">kereta, kelapa, tomato, sekolah...</p>
-          </div>
-          <span class="text-4xl">🚗</span>
-        </button>
-
-        <button onclick="selectLevel(5)" class="bg-rose-100 border-4 border-rose-400 p-5 rounded-3xl text-left flex justify-between items-center btn-bounce col-span-1 sm:col-span-2">
-          <div>
-            <h3 class="text-2xl font-bold text-rose-800">Tahap 5: Frasa Pendek</h3>
-            <p class="text-slate-600">Nak susu, Buka pintu, Saya mahu...</p>
-          </div>
-          <span class="text-4xl">💬</span>
+        <button onclick="startDrillWithSelectedTargets()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-2xl shadow border-b-4 border-emerald-700 btn-bounce mt-2">
+          Mula Latihan Sasaran 🚀
         </button>
       </div>
     </div>
@@ -177,7 +152,7 @@
         <button onclick="navigateTo('menu')" class="text-rose-500 font-bold btn-bounce flex items-center gap-1">
           <i class="fas fa-times-circle text-2xl"></i>
         </button>
-        <div class="text-indigo-900 font-bold text-lg sm:text-xl" id="drill-level-tag">Tahap 1</div>
+        <div class="text-indigo-900 font-bold text-lg sm:text-xl" id="drill-level-tag">Tahap 2: CV</div>
         
         <!-- Navigasi Percubaan & Skip -->
         <div class="flex items-center gap-2">
@@ -200,9 +175,9 @@
           <span id="drill-word-index" class="text-xs font-bold text-slate-400">1 / 10</span>
         </div>
         
-        <div id="drill-visual" class="text-8xl mb-3">⚽</div>
-        <h2 id="drill-word" class="text-4xl font-extrabold text-indigo-900 mb-2">Bola</h2>
-        <p id="drill-syllables" class="text-indigo-500 font-bold text-lg mb-4">bo - la</p>
+        <div id="drill-visual" class="text-8xl mb-3">🔤</div>
+        <h2 id="drill-word" class="text-5xl font-extrabold text-indigo-900 mb-2">ba</h2>
+        <p id="drill-syllables" class="text-indigo-500 font-bold text-xl mb-4">ba</p>
 
         <!-- Kawalan Suara & Audio Contoh -->
         <div class="flex flex-wrap gap-3 justify-center">
@@ -220,7 +195,7 @@
         </div>
       </div>
 
-      <!-- Butang Maklum Balas Penilaian (Ibu Bapa / Terapi) -->
+      <!-- Butang Maklum Balas Penilaian -->
       <div class="bg-white p-4 rounded-3xl shadow-md border-2 border-indigo-100 w-full text-center space-y-3">
         <p class="text-slate-600 font-bold text-sm">Nilaikan Sebutan Anak & Teruskan Percubaan:</p>
         <div class="grid grid-cols-3 gap-3">
@@ -235,7 +210,6 @@
           </button>
         </div>
 
-        <!-- Navigation bar bawah -->
         <div class="pt-2 border-t flex justify-between items-center text-xs text-slate-500 font-bold">
           <button onclick="previousWord()" class="hover:text-indigo-600 flex items-center gap-1">
             <i class="fas fa-arrow-left"></i> Perkataan Sebelum
@@ -247,7 +221,7 @@
       </div>
     </div>
 
-    <!-- 4. TAMBAH PERKATAAN -->
+    <!-- 4. TAMBAH PERKATAAN BAHARU -->
     <div id="screen-add" class="w-full hidden space-y-4">
       <div class="flex items-center justify-between bg-white p-4 rounded-2xl shadow border-2 border-indigo-200">
         <button onclick="navigateTo('menu')" class="text-slate-500 hover:text-slate-700 text-xl font-bold btn-bounce">
@@ -264,25 +238,25 @@
           </div>
 
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Pecahan Suku Kata (Pilihan)</label>
+            <label class="block font-bold text-slate-700 mb-1">Pecahan Suku Kata</label>
             <input type="text" id="add-syllables" placeholder="Contoh: ku - cing" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
           </div>
 
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Emoji ATAU Gambar (URL)</label>
-            <input type="text" id="add-icon" placeholder="Masukkan Emoji 🐱 atau URL Gambar" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
+            <label class="block font-bold text-slate-700 mb-1">Emoji / Ikon Gambar</label>
+            <input type="text" id="add-icon" placeholder="Masukkan Emoji 🐱" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
           </div>
 
           <div>
             <label class="block font-bold text-slate-700 mb-1">Kategori</label>
             <select id="add-category" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
+              <option value="Suku Kata CV">Suku Kata CV</option>
               <option value="Haiwan">Haiwan</option>
               <option value="Makanan">Makanan</option>
               <option value="Mainan">Mainan</option>
               <option value="Ahli Keluarga">Ahli Keluarga</option>
               <option value="Pakaian">Pakaian</option>
               <option value="Kenderaan">Kenderaan</option>
-              <option value="Kata Kerja">Kata Kerja</option>
               <option value="Frasa Harian">Frasa Harian</option>
             </select>
           </div>
@@ -291,7 +265,7 @@
             <label class="block font-bold text-slate-700 mb-1">Tahap</label>
             <select id="add-level" class="w-full p-3 border-2 border-slate-300 rounded-xl focus:border-purple-500 outline-none">
               <option value="1">Tahap 1 (Vokal)</option>
-              <option value="2">Tahap 2 (Suku Kata KV)</option>
+              <option value="2">Tahap 2 (Suku Kata CV)</option>
               <option value="3" selected>Tahap 3 (2 Suku Kata)</option>
               <option value="4">Tahap 4 (3 Suku Kata)</option>
               <option value="5">Tahap 5 (Frasa Pendek)</option>
@@ -299,7 +273,7 @@
           </div>
 
           <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-2xl shadow border-b-4 border-purple-800 btn-bounce">
-            Simpan Perkataan
+            Simpan Perkataan (Firebase & Local)
           </button>
         </form>
       </div>
@@ -470,18 +444,37 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // --- SENARAI KONSONAN UNTUK POLA SUKU KATA CV ---
+    const cvConsonants = ["b", "p", "m", "t", "k", "d", "g", "n", "ny", "ng", "l", "r", "s", "z", "f", "v"];
+    const cvVowels = ["a", "i", "u", "e", "e", "o"]; // e (taling) & e (pepet)
+
+    // Jana suku kata CV lengkap mengikut pola: ba, bi, bu, be, be, bo...
+    function generateCVWords() {
+      let result = [];
+      cvConsonants.forEach(c => {
+        cvVowels.forEach(v => {
+          result.push({
+            word: `${c}${v}`,
+            syllables: `${c}${v}`,
+            icon: "🔤",
+            level: 2,
+            category: "Suku Kata CV",
+            consonant: c
+          });
+        });
+      });
+      return result;
+    }
+
     // --- DATA BASE WORD LIST ---
-    const defaultWords = [
+    const cvWordsList = generateCVWords();
+
+    const otherWordsList = [
       // Tahap 1
       { word: "a", syllables: "a", icon: "🅰️", level: 1, category: "Vokal" },
       { word: "i", syllables: "i", icon: "ℹ️", level: 1, category: "Vokal" },
       { word: "u", syllables: "u", icon: "⛎", level: 1, category: "Vokal" },
       { word: "ai", syllables: "a - i", icon: "✨", level: 1, category: "Vokal" },
-      // Tahap 2
-      { word: "ma", syllables: "ma", icon: "👩", level: 2, category: "Suku Kata" },
-      { word: "ba", syllables: "ba", icon: "👶", level: 2, category: "Suku Kata" },
-      { word: "pa", syllables: "pa", icon: "👨", level: 2, category: "Suku Kata" },
-      { word: "ta", syllables: "ta", icon: "👏", level: 2, category: "Suku Kata" },
       // Tahap 3
       { word: "bola", syllables: "bo - la", icon: "⚽", level: 3, category: "Mainan" },
       { word: "baju", syllables: "ba - ju", icon: "👕", level: 3, category: "Pakaian" },
@@ -502,14 +495,18 @@
       { word: "Saya mahu", syllables: "Sa - ya - ma - hu", icon: "🙋", level: 5, category: "Frasa Harian" }
     ];
 
+    const defaultWords = [...otherWordsList, ...cvWordsList];
+
     // --- STATE UTAMA ---
     let currentProfile = "Murid Utama";
     let profiles = ["Murid Utama"];
-    let currentLevel = 1;
+    let currentLevel = 2;
     let stars = 0;
-    let repTarget = 5; // Ditetapkan kepada 5 percubaan secara lalai
+    let repTarget = 5; // Sahaja 5 percubaan secara lalai
     let audioSpeed = 0.9;
     let audioEnabled = true;
+
+    let selectedConsonantTargets = ["b", "p", "m"]; // Defaul target awal
 
     let totalReps = 0;
     let correctReps = 0;
@@ -528,19 +525,22 @@
     // --- APABILA APLIKASI DIMUATKAN ---
     window.onload = () => {
       loadState();
+      loadLocalCustomWords();
       fetchCustomWordsFirebase();
+      renderTargetSelectionGrid();
       renderGallery();
       renderCustomList();
     };
 
     function navigateTo(screen) {
-      const screens = ['menu', 'level', 'drill', 'add', 'gallery', 'list', 'reports', 'therapist', 'settings'];
+      const screens = ['menu', 'target-select', 'drill', 'add', 'gallery', 'list', 'reports', 'therapist', 'settings'];
       screens.forEach(s => document.getElementById(`screen-${s}`).classList.add('hidden'));
       document.getElementById(`screen-${screen}`).classList.remove('hidden');
 
       if (screen === 'reports') renderReports();
       if (screen === 'gallery') renderGallery();
       if (screen === 'list') renderCustomList();
+      if (screen === 'target-select') renderTargetSelectionGrid();
     }
 
     // --- PENGURUSAN STATE LOCAL & FIREBASE ---
@@ -572,28 +572,75 @@
       });
     }
 
+    function loadLocalCustomWords() {
+      const stored = localStorage.getItem('cas_custom_words');
+      if (stored) {
+        try { customWords = JSON.parse(stored); } catch (e) { customWords = []; }
+      }
+    }
+
     function fetchCustomWordsFirebase() {
       db.ref('custom_words').on('value', (snapshot) => {
         const data = snapshot.val();
-        customWords = [];
         if (data) {
-          Object.keys(data).forEach(k => customWords.push(data[k]));
+          const firebaseList = [];
+          Object.keys(data).forEach(k => firebaseList.push(data[k]));
+          // Gabungkan perbezaan kata tempatan dan firebase
+          customWords = firebaseList;
+          localStorage.setItem('cas_custom_words', JSON.stringify(customWords));
         }
       });
     }
 
-    // --- LOGIK LATIHAN (DRILL) ---
-    function selectLevel(lvl) {
-      currentLevel = lvl;
-      startDrill();
+    // --- RENDER SELEKSI SASARAN TERAPI ---
+    function renderTargetSelectionGrid() {
+      const container = document.getElementById('target-consonant-grid');
+      container.innerHTML = '';
+
+      cvConsonants.forEach(c => {
+        const isSelected = selectedConsonantTargets.includes(c);
+        const btn = document.createElement('button');
+        btn.className = `p-3 font-bold rounded-2xl border-2 text-lg btn-bounce ${isSelected ? 'bg-indigo-600 text-white border-indigo-800' : 'bg-slate-100 text-slate-700 border-slate-300'}`;
+        btn.innerText = c.toUpperCase();
+        btn.onclick = () => {
+          if (selectedConsonantTargets.includes(c)) {
+            selectedConsonantTargets = selectedConsonantTargets.filter(item => item !== c);
+          } else {
+            selectedConsonantTargets.push(c);
+          }
+          renderTargetSelectionGrid();
+        };
+        container.appendChild(btn);
+      });
     }
 
-    function startDrill() {
+    function selectAllTargets(flag) {
+      selectedConsonantTargets = flag ? [...cvConsonants] : [];
+      renderTargetSelectionGrid();
+    }
+
+    function startDrillWithSelectedTargets() {
       const allAvailable = [...defaultWords, ...customWords];
-      activeDrillSet = allAvailable.filter(w => w.level === currentLevel);
+      activeDrillSet = allAvailable.filter(w => w.consonant && selectedConsonantTargets.includes(w.consonant));
 
       if (activeDrillSet.length === 0) {
-        activeDrillSet = defaultWords.filter(w => w.level === 1);
+        alert("Sila pilih sekurang-kurangnya satu sasaran konsonan!");
+        return;
+      }
+
+      currentDrillIndex = 0;
+      currentRepCount = 1;
+      navigateTo('drill');
+      loadDrillCard();
+    }
+
+    // --- LOGIK LATIHAN (DRILL) ---
+    function startDrill() {
+      const allAvailable = [...defaultWords, ...customWords];
+      activeDrillSet = allAvailable.filter(w => !w.consonant || selectedConsonantTargets.includes(w.consonant));
+
+      if (activeDrillSet.length === 0) {
+        activeDrillSet = cvWordsList.filter(w => w.consonant === 'b');
       }
 
       currentDrillIndex = 0;
@@ -616,7 +663,7 @@
       const currentItem = activeDrillSet[currentDrillIndex];
       document.getElementById('drill-level-tag').innerText = `Tahap ${currentItem.level || currentLevel}`;
       document.getElementById('drill-category').innerText = currentItem.category || "Latihan";
-      document.getElementById('drill-visual').innerText = currentItem.icon && currentItem.icon.length < 5 ? currentItem.icon : "🖼️";
+      document.getElementById('drill-visual').innerText = currentItem.icon && currentItem.icon.length < 5 ? currentItem.icon : "🔤";
       document.getElementById('drill-word').innerText = currentItem.word;
       document.getElementById('drill-syllables').innerText = currentItem.syllables || currentItem.word;
 
@@ -735,7 +782,7 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    // --- TAMBAH PERKATAAN BAHARU ---
+    // --- TAMBAH PERKATAAN BAHARU (DISIMPAN KEKAL) ---
     function saveCustomWord(e) {
       e.preventDefault();
       const word = document.getElementById('add-word').value.trim();
@@ -745,8 +792,17 @@
       const level = parseInt(document.getElementById('add-level').value);
 
       const newObj = { word, syllables, icon, category, level };
+
+      // Simpan ke LocalStorage
+      customWords.push(newObj);
+      localStorage.setItem('cas_custom_words', JSON.stringify(customWords));
+
+      // Simpan ke Firebase Database
       db.ref('custom_words').push(newObj).then(() => {
-        alert('Perkataan berjaya ditambah!');
+        alert('Perkataan baharu berjaya disimpan!');
+        navigateTo('menu');
+      }).catch(() => {
+        alert('Disimpan secara tempatan (Local Storage).');
         navigateTo('menu');
       });
     }
@@ -757,7 +813,7 @@
       container.innerHTML = '';
 
       const allWords = [...defaultWords, ...customWords];
-      allWords.forEach(item => {
+      allWords.slice(0, 30).forEach(item => {
         const card = document.createElement('div');
         card.className = "bg-pink-50 border-2 border-pink-200 rounded-2xl p-4 text-center shadow-sm";
         card.innerHTML = `
@@ -774,7 +830,7 @@
       container.innerHTML = '';
 
       const allWords = [...defaultWords, ...customWords];
-      allWords.slice(0, 8).forEach((item, idx) => {
+      allWords.slice(0, 10).forEach((item, idx) => {
         const row = document.createElement('div');
         row.className = "bg-amber-50 border-2 border-amber-200 p-3 rounded-2xl flex items-center justify-between";
         row.innerHTML = `
