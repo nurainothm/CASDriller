@@ -179,13 +179,13 @@
         </button>
         <div class="text-indigo-900 font-bold text-lg sm:text-xl" id="drill-level-tag">Tahap 1</div>
         
-        <!-- Butang Navigasi Skip / Seterusnya -->
+        <!-- Navigasi Percubaan & Skip -->
         <div class="flex items-center gap-2">
           <button onclick="previousWord()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded-xl font-bold text-sm btn-bounce" title="Perkataan Sebelum">
             <i class="fas fa-step-backward"></i>
           </button>
           <div class="bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full text-xs sm:text-sm">
-            Ulangan: <span id="current-rep">1</span>/<span id="total-rep">10</span>
+            Percubaan: <span id="current-rep">1</span>/<span id="total-rep">5</span>
           </div>
           <button onclick="skipWord()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded-xl font-bold text-sm btn-bounce flex items-center gap-1" title="Langkah Perkataan Ini">
             <span>Skip</span> <i class="fas fa-step-forward"></i>
@@ -222,7 +222,7 @@
 
       <!-- Butang Maklum Balas Penilaian (Ibu Bapa / Terapi) -->
       <div class="bg-white p-4 rounded-3xl shadow-md border-2 border-indigo-100 w-full text-center space-y-3">
-        <p class="text-slate-600 font-bold text-sm">Nilaikan Sebutan Anak & Teruskan Ulangan:</p>
+        <p class="text-slate-600 font-bold text-sm">Nilaikan Sebutan Anak & Teruskan Percubaan:</p>
         <div class="grid grid-cols-3 gap-3">
           <button onclick="recordRepetition('correct')" class="bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-2xl font-bold btn-bounce shadow">
             ✓ Betul
@@ -235,7 +235,7 @@
           </button>
         </div>
 
-        <!-- Butang Skip Utama Di Bawah -->
+        <!-- Navigation bar bawah -->
         <div class="pt-2 border-t flex justify-between items-center text-xs text-slate-500 font-bold">
           <button onclick="previousWord()" class="hover:text-indigo-600 flex items-center gap-1">
             <i class="fas fa-arrow-left"></i> Perkataan Sebelum
@@ -316,7 +316,7 @@
 
       <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-pink-200 max-h-[60vh] overflow-y-auto">
         <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <!-- Item Galeri Diisi Oleh JS -->
+          <!-- Item Galeri -->
         </div>
       </div>
     </div>
@@ -352,7 +352,7 @@
       <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-teal-200 space-y-6">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div class="bg-teal-50 p-3 rounded-2xl border-2 border-teal-200">
-            <div class="text-slate-500 text-xs font-bold">Jumlah Ulangan</div>
+            <div class="text-slate-500 text-xs font-bold">Jumlah Percubaan</div>
             <div id="rep-total" class="text-2xl font-bold text-teal-800">0</div>
           </div>
           <div class="bg-emerald-50 p-3 rounded-2xl border-2 border-emerald-200">
@@ -425,12 +425,12 @@
 
       <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-slate-200 space-y-4">
         <div class="flex justify-between items-center py-2 border-b">
-          <span class="font-bold text-slate-700">Jumlah Ulangan Sasaran</span>
+          <span class="font-bold text-slate-700">Jumlah Percubaan Sasaran</span>
           <select id="setting-rep-target" onchange="updateSettings()" class="p-2 border rounded-xl font-bold">
-            <option value="5">5 Kali</option>
-            <option value="10" selected>10 Kali</option>
-            <option value="15">15 Kali</option>
-            <option value="20">20 Kali</option>
+            <option value="3">3 Kali</option>
+            <option value="5" selected>5 Kali (Syor)</option>
+            <option value="8">8 Kali</option>
+            <option value="10">10 Kali</option>
           </select>
         </div>
 
@@ -507,7 +507,7 @@
     let profiles = ["Murid Utama"];
     let currentLevel = 1;
     let stars = 0;
-    let repTarget = 10;
+    let repTarget = 5; // Ditetapkan kepada 5 percubaan secara lalai
     let audioSpeed = 0.9;
     let audioEnabled = true;
 
@@ -549,6 +549,13 @@
       totalReps = parseInt(localStorage.getItem('cas_total_reps') || '0');
       correctReps = parseInt(localStorage.getItem('cas_correct_reps') || '0');
       approxReps = parseInt(localStorage.getItem('cas_approx_reps') || '0');
+      
+      const savedTarget = localStorage.getItem('cas_rep_target');
+      if (savedTarget) {
+        repTarget = parseInt(savedTarget);
+        document.getElementById('setting-rep-target').value = repTarget;
+      }
+
       document.getElementById('star-count').innerText = stars;
     }
 
@@ -557,6 +564,7 @@
       localStorage.setItem('cas_total_reps', totalReps);
       localStorage.setItem('cas_correct_reps', correctReps);
       localStorage.setItem('cas_approx_reps', approxReps);
+      localStorage.setItem('cas_rep_target', repTarget);
       document.getElementById('star-count').innerText = stars;
 
       db.ref(`progress/${currentProfile}`).set({
@@ -691,7 +699,7 @@
       }
     }
 
-    // --- REKOD ULANGAN & PENILAIAN ---
+    // --- REKOD PERCUBAAN & PENILAIAN ---
     function recordRepetition(type) {
       totalReps++;
       if (type === 'correct') correctReps++;
@@ -709,12 +717,12 @@
         currentRepCount++;
         document.getElementById('current-rep').innerText = currentRepCount;
       } else {
-        // Selesai satu set sasaran
+        // Selesai 5 percubaan sasaran
         stars++;
         saveState();
         currentRepCount = 1;
         currentDrillIndex = (currentDrillIndex + 1) % activeDrillSet.length;
-        alert("Tahniah! Latihan perkataan ini selesai. Sedia untuk perkataan seterusnya!");
+        alert("Tahniah! 5 percubaan selesai. Sedia untuk perkataan seterusnya!");
         loadDrillCard();
       }
       saveState();
@@ -852,6 +860,7 @@
     function updateSettings() {
       repTarget = parseInt(document.getElementById('setting-rep-target').value);
       audioSpeed = parseFloat(document.getElementById('setting-speed').value);
+      saveState();
     }
 
     function toggleAudio() {
@@ -867,6 +876,7 @@
         totalReps = 0;
         correctReps = 0;
         approxReps = 0;
+        repTarget = 5;
         saveState();
         alert('Semua data telah dikosongkan.');
         navigateTo('menu');
